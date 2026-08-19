@@ -53,7 +53,7 @@
       --frame-ink-dim: rgba(242,246,249,0.55);
       --frame-border: rgba(242,246,249,0.14);
 
-      --board-bg: #0f1622;
+      --board-bg: #1b2c40;
       --board-grain-a: rgba(0,0,0,0.3);
       --board-grain-b: rgba(180,220,235,0.06);
 
@@ -337,7 +337,7 @@
     gap: var(--sp-2);
     padding: var(--sp-5) var(--sp-6) var(--sp-6);
     overflow-x: auto;
-    align-items: flex-start;
+    align-items: stretch;
     min-height: 60vh;
     background-image:
       radial-gradient(var(--board-grain-a) 1px, transparent 1px),
@@ -372,6 +372,14 @@
     align-items: center;
     gap: 8px;
     white-space: nowrap;
+  }
+  .lane-tag .stage-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--stage-color, var(--accent));
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.3) inset;
+    flex-shrink: 0;
   }
   .lane-tag .lane-count {
     font-weight: 400;
@@ -944,7 +952,7 @@
       var tag = document.createElement("div");
       tag.className = "lane-tag";
       tag.style.setProperty("--stage-color", stage.color);
-      tag.innerHTML = '<span>' + t(stage.i18n) + '</span>' +
+      tag.innerHTML = '<span class="stage-dot"></span><span>' + t(stage.i18n) + '</span>' +
         '<span class="lane-count">' + stageCards.length + '</span>' +
         (dueCount > 0 ? '<span class="due-pip">' + dueCount + '</span>' : "");
 
