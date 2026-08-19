@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisão Espaçada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --frame: #141721;
+    --frame-2: #0d0f17;
+    --frame-ink: #f2f6f9;
+    --frame-ink-dim: rgba(242,246,249,0.62);
+    --frame-border: rgba(242,246,249,0.18);
+
+    --board-bg: #c2d2d9;
+    --board-grain-a: rgba(20,30,40,0.08);
+    --board-grain-b: rgba(255,255,255,0.35);
+
+    --ink: #141721;
+    --ink-soft: #3e5462;
+    --accent: #1a7ba3;
+    --accent-ink: #ffffff;
+    --card-shadow: rgba(10,20,30,0.38);
+
+    --paper: #f2f8fa;
+    --note-ink: #12222b;
+    --due: #ab2c1e;
+    --due-ink: #fff3ee;
+    --pin-metal: #7c93a0;
+    --pin-metal-hi: #d7e6ed;
+
+    --c-entrada: #eaf4f8;
+    --c-h24: #bfe4f0;
+    --c-d7: #7fcbe3;
+    --c-d28: #3eabd6;
+    --c-m6: #1b7a96;
+    --c-dominado: #1c3145;
+    --c-dominado-ink: #f2f8fa;
+
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --frame: #0b0d14;
+      --frame-2: #06070b;
+      --frame-ink: #f2f6f9;
+      --frame-ink-dim: rgba(242,246,249,0.55);
+      --frame-border: rgba(242,246,249,0.14);
+
+      --board-bg: #0f1622;
+      --board-grain-a: rgba(0,0,0,0.3);
+      --board-grain-b: rgba(180,220,235,0.06);
+
+      --ink: #eaf4f8;
+      --ink-soft: #8fa6b3;
+      --accent: #4fc6ec;
+      --accent-ink: #05222c;
+      --card-shadow: rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --frame: #0b0d14;
+    --frame-2: #06070b;
+    --frame-ink: #f2f6f9;
+    --frame-ink-dim: rgba(242,246,249,0.55);
+    --frame-border: rgba(242,246,249,0.14);
+
+    --board-bg: #0f1622;
+    --board-grain-a: rgba(0,0,0,0.3);
+    --board-grain-b: rgba(180,220,235,0.06);
+
+    --ink: #eaf4f8;
+    --ink-soft: #8fa6b3;
+    --accent: #4fc6ec;
+    --accent-ink: #05222c;
+    --card-shadow: rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: "Work Sans", "Segoe UI", sans-serif;
+    background: var(--board-bg);
+    color: var(--ink);
+  }
+
+  /* ---------- frame / header ---------- */
+  header.frame {
+    background: var(--frame);
+    color: var(--frame-ink);
+    border-bottom: 1px solid var(--frame-border);
+    padding: var(--sp-5) var(--sp-6) var(--sp-4);
+  }
+  .frame-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 2.1rem;
+    letter-spacing: 0.01em;
+    margin: 0 0 var(--sp-1) 0;
+    text-wrap: balance;
+  }
+  .frame-subtitle {
+    margin: 0 0 var(--sp-5) 0;
+    color: var(--frame-ink-dim);
+    font-size: 0.92rem;
+    max-width: 62ch;
+    line-height: 1.5;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    align-items: flex-end;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+  .field label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--frame-ink-dim);
+    font-weight: 600;
+  }
+  select {
+    font-family: "Work Sans", sans-serif;
+    font-size: 0.9rem;
+    padding: 8px 10px;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-bottom: 2px solid var(--accent);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--note-ink);
+  }
+  select:focus-visible, button:focus-visible, .content:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  button {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 9px 16px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.12s ease, filter 0.12s ease;
+  }
+  button.btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  button.btn-ghost {
+    background: transparent;
+    color: var(--frame-ink);
+    border-color: var(--frame-border);
+  }
+  button.btn-secondary {
+    background: transparent;
+    color: var(--note-ink);
+    border-color: rgba(0,0,0,0.25);
+  }
+  button:hover { filter: brightness(1.08); }
+  button:active { transform: translateY(1px); }
+  @media (prefers-reduced-motion: reduce) {
+    button { transition: none; }
+  }
+
+  .stats {
+    margin-left: auto;
+    align-self: center;
+    font-size: 0.82rem;
+    color: var(--frame-ink-dim);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stats .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--due);
+    display: inline-block;
+  }
+  #importInput { display: none; }
+
+  /* ---------- add / edit modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,7,4,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-5);
+    z-index: 50;
+  }
+  .modal-overlay[hidden] { display: none; }
+
+  .modal {
+    position: relative;
+    width: min(480px, 100%);
+    background: var(--paper);
+    color: var(--note-ink);
+    border-radius: 3px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.45);
+    padding: var(--sp-5);
+  }
+  .modal::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--pin-metal-hi), var(--pin-metal) 70%);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.45);
+  }
+  .modal-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin: 0 0 var(--sp-4) 0;
+  }
+
+  .format-toolbar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: var(--sp-3);
+  }
+  .format-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.18);
+    background: #fff;
+    color: var(--note-ink);
+    font-family: "Work Sans", sans-serif;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .format-btn.is-bold { font-weight: 700; }
+  .format-btn.is-italic { font-style: italic; }
+  .format-btn.is-underline { text-decoration: underline; }
+  .format-btn[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+
+  .modal-editor {
+    font-family: "Kalam", cursive;
+    font-size: 1.1rem;
+    line-height: 1.45;
+    min-height: 110px;
+    max-height: 40vh;
+    overflow-y: auto;
+    border: 1px solid rgba(0,0,0,0.18);
+    border-radius: 4px;
+    padding: 10px 12px;
+    background: #fff;
+    outline: none;
+  }
+  .modal-editor:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .modal-editor:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(0,0,0,0.35);
+    font-family: "Work Sans", sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sp-2);
+    margin-top: var(--sp-4);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: rgba(0,0,0,0.4);
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 2px 6px;
+    cursor: pointer;
+  }
+  .modal-close:hover { color: var(--due); }
+
+  .help-body {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .help-body p { margin: 0 0 var(--sp-3); }
+  .help-body h3 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin: var(--sp-4) 0 var(--sp-2);
+  }
+  .help-body h3:first-of-type { margin-top: 0; }
+  .help-body ul {
+    margin: 0;
+    padding-left: 1.1em;
+  }
+  .help-body li { margin-bottom: 6px; }
+  .help-body li strong { color: var(--note-ink); }
+
+  /* ---------- board ---------- */
+  main.board {
+    display: flex;
+    gap: var(--sp-2);
+    padding: var(--sp-5) var(--sp-6) var(--sp-6);
+    overflow-x: auto;
+    align-items: flex-start;
+    min-height: 60vh;
+    background-image:
+      radial-gradient(var(--board-grain-a) 1px, transparent 1px),
+      radial-gradient(var(--board-grain-b) 1px, transparent 1px);
+    background-size: 22px 22px, 22px 22px;
+    background-position: 0 0, 11px 11px;
+  }
+  .lane {
+    display: flex;
+    flex-direction: column;
+    min-width: 230px;
+    max-width: 230px;
+    padding: 0 var(--sp-2);
+    border-right: 1px dashed rgba(0,0,0,0.12);
+  }
+  .lane:last-child { border-right: none; }
+
+  .lane-tag {
+    align-self: flex-start;
+    background: var(--frame);
+    color: var(--frame-ink);
+    border-top: 3px solid var(--stage-color, var(--accent));
+    border-radius: 0 0 4px 4px;
+    padding: 7px 12px 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    margin-bottom: var(--sp-4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .lane-tag .lane-count {
+    font-weight: 400;
+    color: var(--frame-ink-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .lane-tag .due-pip {
+    background: var(--due);
+    color: var(--due-ink);
+    border-radius: 8px;
+    padding: 1px 6px;
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lane-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+    flex: 1;
+    min-height: 80px;
+    padding-bottom: var(--sp-4);
+  }
+  .lane-body.drag-over {
+    background: rgba(0,0,0,0.05);
+    outline: 2px dashed var(--accent);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+
+  .empty-hint {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    text-align: center;
+    padding: 14px 6px;
+    font-style: italic;
+  }
+
+  /* ---------- sticky-note cards ---------- */
+  .card {
+    position: relative;
+    border-radius: 2px;
+    padding: 16px 12px 10px;
+    box-shadow: 2px 4px 8px var(--card-shadow);
+    cursor: grab;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    color: var(--note-ink);
+    background: var(--stage-color);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:nth-child(odd)  { transform: rotate(-1.1deg); }
+  .card:nth-child(even) { transform: rotate(1deg); }
+  .card:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 3px 7px 12px var(--card-shadow); }
+  .card.dragging { opacity: 0.35; }
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+    .card:hover { transform: none; }
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--pin-metal-hi), var(--pin-metal) 70%);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.45);
+  }
+  .card.due::before {
+    background: radial-gradient(circle at 35% 30%, #e8968a, var(--due) 70%);
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    right: 0; bottom: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 0 14px 14px;
+    border-color: transparent transparent rgba(0,0,0,0.14) transparent;
+  }
+
+  .card.stage-dominado, .card.stage-m6 {
+    color: var(--c-dominado-ink);
+  }
+  .card.stage-dominado::after, .card.stage-m6::after {
+    border-color: transparent transparent rgba(255,255,255,0.12) transparent;
+  }
+
+  .card .content {
+    font-family: "Kalam", cursive;
+    font-size: 1.05rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    outline: none;
+    min-height: 20px;
+  }
+  .card .meta {
+    margin-top: 10px;
+    font-family: "Work Sans", sans-serif;
+    font-size: 0.68rem;
+    color: rgba(0,0,0,0.6);
+  }
+  .card.stage-dominado .meta, .card.stage-m6 .meta { color: rgba(220,234,240,0.8); }
+  .card .meta .review-label { font-weight: 600; }
+  .card .meta .review-label.is-due { color: var(--due); }
+  .card.stage-dominado .meta .review-label.is-due, .card.stage-m6 .meta .review-label.is-due { color: #ff8f7d; }
+
+  .card .del-btn {
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    background: none;
+    border: none;
+    color: rgba(0,0,0,0.32);
+    font-size: 1rem;
+    line-height: 1;
+    padding: 2px 5px;
+    cursor: pointer;
+  }
+  .card .del-btn:hover { color: var(--due); }
+  .card.stage-dominado .del-btn, .card.stage-m6 .del-btn { color: rgba(220,234,240,0.55); }
+
+  footer.page-footer {
+    padding: var(--sp-4) var(--sp-6) var(--sp-6);
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+
+<header class="frame">
+  <h1 class="frame-title" id="frameTitle">Revisão Espaçada</h1>
+  <p class="frame-subtitle" id="frameSubtitle">Um quadro de repetição espaçada (24 horas, 7 dias, 28 dias e 6 meses). Arraste os cartões entre as raias para agendar a próxima revisão.</p>
+
+  <div class="toolbar">
+    <button class="btn-primary" id="addCardBtn">Adicionar cartão</button>
+
+    <div class="field">
+      <label for="langSelect" id="langLabel">Idioma</label>
+      <select id="langSelect"></select>
+    </div>
+
+    <div class="field">
+      <label for="tzSelect" id="tzLabel">Fuso horário</label>
+      <select id="tzSelect"></select>
+    </div>
+
+    <button class="btn-ghost" id="exportBtn">Exportar CSV</button>
+    <button class="btn-ghost" id="importBtn">Importar CSV</button>
+    <input type="file" id="importInput" accept=".csv,text/csv">
+
+    <button class="btn-ghost" id="helpBtn">Ajuda</button>
+
+    <div class="stats" id="statsLabel"></div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="cardModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 class="modal-title" id="modalTitle">Novo cartão</h2>
+    <div class="format-toolbar" id="formatToolbar" role="toolbar" aria-label="Formatação de texto">
+      <button type="button" class="format-btn is-bold" id="fmtBold" title="Negrito (Ctrl+B)" aria-pressed="false">B</button>
+      <button type="button" class="format-btn is-italic" id="fmtItalic" title="Itálico (Ctrl+I)" aria-pressed="false">I</button>
+      <button type="button" class="format-btn is-underline" id="fmtUnderline" title="Sublinhado (Ctrl+U)" aria-pressed="false">S</button>
+    </div>
+    <div class="modal-editor" id="modalEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Conteúdo do cartão" data-placeholder="Digite o conteúdo a revisar..."></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="modalCancelBtn">Cancelar</button>
+      <button type="button" class="btn-primary" id="modalSaveBtn">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="helpModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+    <button type="button" class="modal-close" id="helpCloseX" title="Fechar">&times;</button>
+    <h2 class="modal-title" id="helpModalTitle">Como usar</h2>
+    <div class="help-body" id="helpModalBody"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-primary" id="helpCloseBtn">Entendi</button>
+    </div>
+  </div>
+</div>
+
+<main class="board" id="board"></main>
+
+<footer class="page-footer">
+  <span id="footerText">Dados salvos localmente no navegador (localStorage). Use exportar / importar CSV para fazer backup ou mover entre dispositivos.</span>
+  <br>
+  <span id="visitsLabel">Visitas:</span> <span id="visitCount">···</span>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "revisaoEspacada.cards.v1";
+  var TZ_KEY = "revisaoEspacada.tz.v1";
+  var LANG_KEY = "revisaoEspacada.lang.v1";
+
+  var STAGES = [
+    { key: "entrada",  i18n: "stageEntrada",  color: "var(--c-entrada)"  },
+    { key: "h24",      i18n: "stageH24",      color: "var(--c-h24)"      },
+    { key: "d7",       i18n: "stageD7",       color: "var(--c-d7)"       },
+    { key: "d28",      i18n: "stageD28",      color: "var(--c-d28)"      },
+    { key: "m6",       i18n: "stageM6",       color: "var(--c-m6)"       },
+    { key: "dominado", i18n: "stageDominado", color: "var(--c-dominado)" }
+  ];
+  var STAGE_KEYS = STAGES.map(function (s) { return s.key; });
+
+  var TZ_OPTIONS = [
+    "America/Sao_Paulo", "America/New_York", "America/Los_Angeles",
+    "America/Bogota", "Europe/Lisbon", "Europe/London", "Europe/Berlin",
+    "Asia/Tokyo", "Asia/Shanghai", "Australia/Sydney", "UTC"
+  ];
+
+  // ---- i18n ----
+  var SUPPORTED_LANGS = ["pt", "en", "es"];
+  var LANG_NAMES = { pt: "Português", en: "English", es: "Español" };
+  var LOCALE_MAP = { pt: "pt-BR", en: "en-US", es: "es-ES" };
+  var HTML_LANG_MAP = { pt: "pt-BR", en: "en", es: "es" };
+
+  var TRANSLATIONS = {
+    pt: {
+      appTitle: "Revisão Espaçada",
+      subtitle: "Um quadro de repetição espaçada (24 horas, 7 dias, 28 dias e 6 meses). Arraste os cartões entre as raias para agendar a próxima revisão.",
+      addCard: "Adicionar cartão",
+      languageLabel: "Idioma",
+      timezoneLabel: "Fuso horário",
+      exportCsv: "Exportar CSV",
+      importCsv: "Importar CSV",
+      modalTitleNew: "Novo cartão",
+      modalTitleEdit: "Editar cartão",
+      formatToolbarLabel: "Formatação de texto",
+      fmtBoldTitle: "Negrito (Ctrl+B)",
+      fmtItalicTitle: "Itálico (Ctrl+I)",
+      fmtUnderlineTitle: "Sublinhado (Ctrl+U)",
+      editorAriaLabel: "Conteúdo do cartão",
+      editorPlaceholder: "Digite o conteúdo a revisar...",
+      cancel: "Cancelar",
+      save: "Salvar",
+      footerText: "Dados salvos localmente no navegador (localStorage). Use exportar / importar CSV para fazer backup ou mover entre dispositivos.",
+      visitsLabel: "Visitas:",
+      stageEntrada: "Entrada",
+      stageH24: "24 horas",
+      stageD7: "7 dias",
+      stageD28: "28 dias",
+      stageM6: "6 meses",
+      stageDominado: "Dominado",
+      emptyHint: "Sem cartões aqui",
+      deleteCard: "Excluir cartão",
+      editHint: "Clique para editar",
+      completed: "Concluído",
+      reviewNow: "Revisar agora (previsto {date})",
+      nextReview: "Próxima revisão: {date}",
+      createdOn: "Criado em {date}",
+      statsLine: "{count} cartões · {due} para revisar agora",
+      confirmDelete: "Excluir este cartão?",
+      csvInvalid: "CSV inválido: são necessárias ao menos as colunas id e content.",
+      csvImportDone: "Importação concluída: {imported} novos, {updated} atualizados.",
+      csvFilename: "cartoes_revisao.csv",
+      helpButton: "Ajuda",
+      helpTitle: "Como usar",
+      helpClose: "Fechar",
+      helpGotIt: "Entendi",
+      helpIntro: "Este quadro ajuda você a revisar qualquer conteúdo usando repetição espaçada: quanto mais vezes você revisa um cartão com sucesso, maior o intervalo até a próxima revisão.",
+      helpStagesTitle: "Estágios e intervalos",
+      helpTipsTitle: "Dicas rápidas",
+      stageEntradaInterval: "revisão liberada imediatamente",
+      stageH24Interval: "próxima revisão em 1 dia",
+      stageD7Interval: "próxima revisão em 7 dias",
+      stageD28Interval: "próxima revisão em 28 dias",
+      stageM6Interval: "próxima revisão em 6 meses",
+      stageDominadoInterval: "sem mais revisões agendadas",
+      helpTipAdd: "Clique em \"Adicionar cartão\" para criar um novo, ou clique no texto de um cartão existente para editá-lo. Use os botões B, I e S para negrito, itálico e sublinhado.",
+      helpTipDrag: "Arraste um cartão para outra coluna para reagendar a próxima revisão a partir daquele momento.",
+      helpTipDue: "Um pino vermelho no cartão (e um número na coluna) indica que ele já está pronto para ser revisado.",
+      helpTipFormat: "Ajuste o fuso horário e o idioma a qualquer momento; seus cartões continuam os mesmos.",
+      helpTipCsv: "Use \"Exportar CSV\" e \"Importar CSV\" para fazer backup ou levar seus cartões para outro dispositivo.",
+      helpTipPrivacy: "Tudo fica salvo apenas neste navegador (localStorage); nada é enviado para um servidor."
+    },
+    en: {
+      appTitle: "Spaced Review",
+      subtitle: "A spaced repetition board (24 hours, 7 days, 28 days, and 6 months). Drag cards between lanes to schedule the next review.",
+      addCard: "Add card",
+      languageLabel: "Language",
+      timezoneLabel: "Time zone",
+      exportCsv: "Export CSV",
+      importCsv: "Import CSV",
+      modalTitleNew: "New card",
+      modalTitleEdit: "Edit card",
+      formatToolbarLabel: "Text formatting",
+      fmtBoldTitle: "Bold (Ctrl+B)",
+      fmtItalicTitle: "Italic (Ctrl+I)",
+      fmtUnderlineTitle: "Underline (Ctrl+U)",
+      editorAriaLabel: "Card content",
+      editorPlaceholder: "Type the content to review...",
+      cancel: "Cancel",
+      save: "Save",
+      footerText: "Data is saved locally in your browser (localStorage). Use export / import CSV to back up or move between devices.",
+      visitsLabel: "Visits:",
+      stageEntrada: "Inbox",
+      stageH24: "24 hours",
+      stageD7: "7 days",
+      stageD28: "28 days",
+      stageM6: "6 months",
+      stageDominado: "Mastered",
+      emptyHint: "No cards here",
+      deleteCard: "Delete card",
+      editHint: "Click to edit",
+      completed: "Done",
+      reviewNow: "Review now (expected {date})",
+      nextReview: "Next review: {date}",
+      createdOn: "Created on {date}",
+      statsLine: "{count} cards · {due} to review now",
+      confirmDelete: "Delete this card?",
+      csvInvalid: "Invalid CSV: at least the id and content columns are required.",
+      csvImportDone: "Import complete: {imported} new, {updated} updated.",
+      csvFilename: "review_cards.csv",
+      helpButton: "Help",
+      helpTitle: "How to use",
+      helpClose: "Close",
+      helpGotIt: "Got it",
+      helpIntro: "This board helps you review anything using spaced repetition: the more times you successfully review a card, the longer the gap until its next review.",
+      helpStagesTitle: "Stages and intervals",
+      helpTipsTitle: "Quick tips",
+      stageEntradaInterval: "review available right away",
+      stageH24Interval: "next review in 1 day",
+      stageD7Interval: "next review in 7 days",
+      stageD28Interval: "next review in 28 days",
+      stageM6Interval: "next review in 6 months",
+      stageDominadoInterval: "no further reviews scheduled",
+      helpTipAdd: "Click \"Add card\" to create one, or click an existing card's text to edit it. Use the B, I, and U buttons for bold, italic, and underline.",
+      helpTipDrag: "Drag a card to another column to reschedule its next review from that moment.",
+      helpTipDue: "A red pin on a card (and a count on its column) means it's ready to review now.",
+      helpTipFormat: "Change the time zone or language anytime; your cards stay the same.",
+      helpTipCsv: "Use \"Export CSV\" and \"Import CSV\" to back up your cards or move them to another device.",
+      helpTipPrivacy: "Everything is saved only in this browser (localStorage); nothing is sent to a server."
+    },
+    es: {
+      appTitle: "Repaso Espaciado",
+      subtitle: "Un tablero de repetición espaciada (24 horas, 7 días, 28 días y 6 meses). Arrastra las tarjetas entre los carriles para programar la próxima revisión.",
+      addCard: "Añadir tarjeta",
+      languageLabel: "Idioma",
+      timezoneLabel: "Zona horaria",
+      exportCsv: "Exportar CSV",
+      importCsv: "Importar CSV",
+      modalTitleNew: "Nueva tarjeta",
+      modalTitleEdit: "Editar tarjeta",
+      formatToolbarLabel: "Formato de texto",
+      fmtBoldTitle: "Negrita (Ctrl+B)",
+      fmtItalicTitle: "Cursiva (Ctrl+I)",
+      fmtUnderlineTitle: "Subrayado (Ctrl+U)",
+      editorAriaLabel: "Contenido de la tarjeta",
+      editorPlaceholder: "Escribe el contenido a repasar...",
+      cancel: "Cancelar",
+      save: "Guardar",
+      footerText: "Los datos se guardan localmente en tu navegador (localStorage). Usa exportar / importar CSV para hacer copia de seguridad o cambiar de dispositivo.",
+      visitsLabel: "Visitas:",
+      stageEntrada: "Bandeja",
+      stageH24: "24 horas",
+      stageD7: "7 días",
+      stageD28: "28 días",
+      stageM6: "6 meses",
+      stageDominado: "Dominado",
+      emptyHint: "Sin tarjetas aquí",
+      deleteCard: "Eliminar tarjeta",
+      editHint: "Haz clic para editar",
+      completed: "Completado",
+      reviewNow: "Revisar ahora (previsto {date})",
+      nextReview: "Próxima revisión: {date}",
+      createdOn: "Creado el {date}",
+      statsLine: "{count} tarjetas · {due} para repasar ahora",
+      confirmDelete: "¿Eliminar esta tarjeta?",
+      csvInvalid: "CSV inválido: se requieren al menos las columnas id y content.",
+      csvImportDone: "Importación completada: {imported} nuevas, {updated} actualizadas.",
+      csvFilename: "tarjetas_repaso.csv",
+      helpButton: "Ayuda",
+      helpTitle: "Cómo usar",
+      helpClose: "Cerrar",
+      helpGotIt: "Entendido",
+      helpIntro: "Este tablero te ayuda a repasar cualquier contenido usando repetición espaciada: cuantas más veces repases una tarjeta con éxito, mayor será el intervalo hasta la próxima revisión.",
+      helpStagesTitle: "Etapas e intervalos",
+      helpTipsTitle: "Consejos rápidos",
+      stageEntradaInterval: "revisión disponible de inmediato",
+      stageH24Interval: "próxima revisión en 1 día",
+      stageD7Interval: "próxima revisión en 7 días",
+      stageD28Interval: "próxima revisión en 28 días",
+      stageM6Interval: "próxima revisión en 6 meses",
+      stageDominadoInterval: "sin más revisiones programadas",
+      helpTipAdd: "Haz clic en \"Añadir tarjeta\" para crear una, o haz clic en el texto de una tarjeta existente para editarla. Usa los botones B, I y S para negrita, cursiva y subrayado.",
+      helpTipDrag: "Arrastra una tarjeta a otra columna para reprogramar su próxima revisión desde ese momento.",
+      helpTipDue: "Un pin rojo en la tarjeta (y un número en la columna) indica que ya está lista para repasar.",
+      helpTipFormat: "Cambia la zona horaria o el idioma cuando quieras; tus tarjetas siguen igual.",
+      helpTipCsv: "Usa \"Exportar CSV\" e \"Importar CSV\" para hacer copia de seguridad o llevar tus tarjetas a otro dispositivo.",
+      helpTipPrivacy: "Todo se guarda solo en este navegador (localStorage); nada se envía a un servidor."
+    }
+  };
+
+  function t(key, vars) {
+    var dict = TRANSLATIONS[currentLang] || TRANSLATIONS.pt;
+    var str = dict[key] != null ? dict[key] : (TRANSLATIONS.pt[key] || key);
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        str = str.replace(new RegExp("\\{" + k + "\\}", "g"), vars[k]);
+      });
+    }
+    return str;
+  }
+
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "c" + Date.now() + Math.random().toString(16).slice(2);
+  }
+
+  function nowISO() { return new Date().toISOString(); }
+
+  function addInterval(date, stageKey) {
+    var d = new Date(date.getTime());
+    switch (stageKey) {
+      case "h24": d.setDate(d.getDate() + 1); break;
+      case "d7":  d.setDate(d.getDate() + 7); break;
+      case "d28": d.setDate(d.getDate() + 28); break;
+      case "m6":  d.setMonth(d.getMonth() + 6); break;
+      default: break;
+    }
+    return d;
+  }
+
+  function nextReviewFor(stageKey, fromISO) {
+    if (stageKey === "dominado") return null;
+    if (stageKey === "entrada") return fromISO;
+    return addInterval(new Date(fromISO), stageKey).toISOString();
+  }
+
+  // ---- state ----
+  var cards = loadCards();
+  var tz = loadTZ();
+  var currentLang = loadLang();
+
+  function loadCards() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed;
+    } catch (e) { return []; }
+  }
+
+  function saveCards() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  }
+
+  function loadTZ() {
+    var stored = localStorage.getItem(TZ_KEY);
+    if (stored) return stored;
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    } catch (e) { return "UTC"; }
+  }
+
+  function saveTZ() { localStorage.setItem(TZ_KEY, tz); }
+
+  function loadLang() {
+    var stored = localStorage.getItem(LANG_KEY);
+    if (stored && SUPPORTED_LANGS.indexOf(stored) !== -1) return stored;
+    var nav = ((navigator.language || "pt").split("-")[0] || "pt").toLowerCase();
+    return SUPPORTED_LANGS.indexOf(nav) !== -1 ? nav : "pt";
+  }
+
+  function saveLang() { localStorage.setItem(LANG_KEY, currentLang); }
+
+  // ---- formatting ----
+  function formatDateTime(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    var locale = LOCALE_MAP[currentLang] || "pt-BR";
+    try {
+      var fmt = new Intl.DateTimeFormat(locale, {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+        timeZone: tz, timeZoneName: "short"
+      });
+      return fmt.format(d);
+    } catch (e) {
+      return d.toLocaleString(locale);
+    }
+  }
+
+  function isDue(card) {
+    return !!card.nextReviewAt && new Date(card.nextReviewAt).getTime() <= Date.now();
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ---- rich text: allow only bold / italic / underline / line breaks ----
+  var ALLOWED_TAGS = { B: 1, STRONG: 1, I: 1, EM: 1, U: 1, BR: 1 };
+
+  function sanitizeHTML(html) {
+    var container = document.createElement("div");
+    container.innerHTML = html;
+
+    function walk(node) {
+      var out = "";
+      node.childNodes.forEach(function (child) {
+        if (child.nodeType === Node.TEXT_NODE) {
+          out += escapeHtml(child.textContent);
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          var tag = child.tagName;
+          if (tag === "BR") {
+            out += "<br>";
+          } else if (ALLOWED_TAGS[tag]) {
+            var t = tag.toLowerCase();
+            out += "<" + t + ">" + walk(child) + "</" + t + ">";
+          } else if (tag === "DIV" || tag === "P") {
+            out += walk(child) + "<br>";
+          } else {
+            out += walk(child);
+          }
+        }
+      });
+      return out;
+    }
+
+    return walk(container).replace(/(<br>)+$/, "");
+  }
+
+  function isContentEmpty(html) {
+    var div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent.trim().length === 0;
+  }
+
+  // ---- rendering ----
+  var board = document.getElementById("board");
+  var statsLabel = document.getElementById("statsLabel");
+
+  function render() {
+    board.innerHTML = "";
+    var totalDue = 0;
+
+    STAGES.forEach(function (stage) {
+      var stageCards = cards
+        .filter(function (c) { return c.stage === stage.key; })
+        .sort(function (a, b) {
+          var av = a.nextReviewAt ? new Date(a.nextReviewAt).getTime() : Infinity;
+          var bv = b.nextReviewAt ? new Date(b.nextReviewAt).getTime() : Infinity;
+          return av - bv;
+        });
+
+      var dueCount = stageCards.filter(isDue).length;
+      totalDue += dueCount;
+
+      var lane = document.createElement("div");
+      lane.className = "lane";
+      lane.dataset.stage = stage.key;
+
+      var tag = document.createElement("div");
+      tag.className = "lane-tag";
+      tag.style.setProperty("--stage-color", stage.color);
+      tag.innerHTML = '<span>' + t(stage.i18n) + '</span>' +
+        '<span class="lane-count">' + stageCards.length + '</span>' +
+        (dueCount > 0 ? '<span class="due-pip">' + dueCount + '</span>' : "");
+
+      var body = document.createElement("div");
+      body.className = "lane-body";
+      body.dataset.stage = stage.key;
+
+      if (stageCards.length === 0) {
+        body.innerHTML = '<div class="empty-hint">' + t("emptyHint") + '</div>';
+      } else {
+        stageCards.forEach(function (card) {
+          body.appendChild(renderCard(card, stage));
+        });
+      }
+
+      lane.appendChild(tag);
+      lane.appendChild(body);
+      board.appendChild(lane);
+
+      attachDropZone(body);
+    });
+
+    statsLabel.innerHTML = (totalDue > 0 ? '<span class="dot"></span>' : "") +
+      t("statsLine", { count: cards.length, due: totalDue });
+  }
+
+  function renderCard(card, stage) {
+    var el = document.createElement("div");
+    el.className = "card stage-" + stage.key + (isDue(card) && stage.key !== "dominado" ? " due" : "");
+    el.style.setProperty("--stage-color", stage.color);
+    el.draggable = true;
+    el.dataset.id = card.id;
+
+    var reviewText;
+    if (stage.key === "dominado") {
+      reviewText = t("completed");
+    } else {
+      reviewText = t(isDue(card) ? "reviewNow" : "nextReview", { date: formatDateTime(card.nextReviewAt) });
+    }
+
+    el.innerHTML =
+      '<button class="del-btn" title="' + escapeHtml(t("deleteCard")) + '">&times;</button>' +
+      '<div class="content" spellcheck="false" title="' + escapeHtml(t("editHint")) + '">' + card.content + '</div>' +
+      '<div class="meta">' +
+        '<div class="review-label' + (isDue(card) && stage.key !== "dominado" ? " is-due" : "") + '">' + reviewText + '</div>' +
+        '<div>' + t("createdOn", { date: formatDateTime(card.createdAt) }) + '</div>' +
+      '</div>';
+
+    el.addEventListener("dragstart", function (e) {
+      e.dataTransfer.setData("text/plain", card.id);
+      el.classList.add("dragging");
+    });
+    el.addEventListener("dragend", function () {
+      el.classList.remove("dragging");
+    });
+
+    el.querySelector(".del-btn").addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (confirm(t("confirmDelete"))) {
+        cards = cards.filter(function (c) { return c.id !== card.id; });
+        saveCards();
+        render();
+      }
+    });
+
+    el.querySelector(".content").addEventListener("click", function (e) {
+      e.stopPropagation();
+      openModal("edit", card);
+    });
+
+    return el;
+  }
+
+  function attachDropZone(body) {
+    body.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      body.classList.add("drag-over");
+    });
+    body.addEventListener("dragleave", function () {
+      body.classList.remove("drag-over");
+    });
+    body.addEventListener("drop", function (e) {
+      e.preventDefault();
+      body.classList.remove("drag-over");
+      var id = e.dataTransfer.getData("text/plain");
+      moveCard(id, body.dataset.stage);
+    });
+  }
+
+  function moveCard(id, stageKey) {
+    var card = cards.find(function (c) { return c.id === id; });
+    if (!card || STAGE_KEYS.indexOf(stageKey) === -1) return;
+    var moved = nowISO();
+    card.stage = stageKey;
+    card.movedAt = moved;
+    card.nextReviewAt = nextReviewFor(stageKey, moved);
+    saveCards();
+    render();
+  }
+
+  // ---- add / edit modal ----
+  var modalOverlay = document.getElementById("cardModal");
+  var modalTitle = document.getElementById("modalTitle");
+  var modalEditor = document.getElementById("modalEditor");
+  var modalSaveBtn = document.getElementById("modalSaveBtn");
+  var modalCancelBtn = document.getElementById("modalCancelBtn");
+  var fmtButtons = {
+    bold: document.getElementById("fmtBold"),
+    italic: document.getElementById("fmtItalic"),
+    underline: document.getElementById("fmtUnderline")
+  };
+  var modalEditingId = null;
+
+  function openModal(mode, card) {
+    modalEditingId = mode === "edit" ? card.id : null;
+    modalTitle.textContent = mode === "edit" ? t("modalTitleEdit") : t("modalTitleNew");
+    modalEditor.innerHTML = mode === "edit" ? card.content : "";
+    modalOverlay.hidden = false;
+    updateFormatButtons();
+    modalEditor.focus();
+  }
+
+  function closeModal() {
+    modalOverlay.hidden = true;
+    modalEditingId = null;
+    modalEditor.innerHTML = "";
+  }
+
+  function updateFormatButtons() {
+    try {
+      fmtButtons.bold.setAttribute("aria-pressed", document.queryCommandState("bold"));
+      fmtButtons.italic.setAttribute("aria-pressed", document.queryCommandState("italic"));
+      fmtButtons.underline.setAttribute("aria-pressed", document.queryCommandState("underline"));
+    } catch (e) { /* queryCommandState unsupported: ignore */ }
+  }
+
+  function applyFormat(cmd) {
+    modalEditor.focus();
+    document.execCommand(cmd, false, null);
+    updateFormatButtons();
+  }
+
+  fmtButtons.bold.addEventListener("click", function () { applyFormat("bold"); });
+  fmtButtons.italic.addEventListener("click", function () { applyFormat("italic"); });
+  fmtButtons.underline.addEventListener("click", function () { applyFormat("underline"); });
+
+  modalEditor.addEventListener("keyup", updateFormatButtons);
+  modalEditor.addEventListener("mouseup", updateFormatButtons);
+  modalEditor.addEventListener("keydown", function (e) {
+    var mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key.toLowerCase() === "b") { e.preventDefault(); applyFormat("bold"); }
+    else if (mod && e.key.toLowerCase() === "i") { e.preventDefault(); applyFormat("italic"); }
+    else if (mod && e.key.toLowerCase() === "u") { e.preventDefault(); applyFormat("underline"); }
+    else if (e.key === "Escape") { closeModal(); }
+  });
+
+  modalOverlay.addEventListener("click", function (e) {
+    if (e.target === modalOverlay) closeModal();
+  });
+  modalCancelBtn.addEventListener("click", closeModal);
+
+  modalSaveBtn.addEventListener("click", function () {
+    var html = sanitizeHTML(modalEditor.innerHTML);
+    if (isContentEmpty(html)) {
+      modalEditor.focus();
+      return;
+    }
+
+    if (modalEditingId) {
+      var existingCard = cards.find(function (c) { return c.id === modalEditingId; });
+      if (existingCard) existingCard.content = html;
+    } else {
+      var now = nowISO();
+      cards.push({
+        id: uid(),
+        content: html,
+        stage: "entrada",
+        createdAt: now,
+        movedAt: now,
+        nextReviewAt: nextReviewFor("entrada", now)
+      });
+    }
+    saveCards();
+    closeModal();
+    render();
+  });
+
+  document.getElementById("addCardBtn").addEventListener("click", function () {
+    openModal("new");
+  });
+
+  // ---- help modal ----
+  var helpModal = document.getElementById("helpModal");
+  var helpCloseX = document.getElementById("helpCloseX");
+  var helpCloseBtn = document.getElementById("helpCloseBtn");
+
+  function buildHelpBody() {
+    var stagesHtml = STAGES.map(function (s) {
+      return "<li><strong>" + escapeHtml(t(s.i18n)) + "</strong>: " + escapeHtml(t(s.i18n + "Interval")) + "</li>";
+    }).join("");
+
+    var tipKeys = ["helpTipAdd", "helpTipDrag", "helpTipDue", "helpTipFormat", "helpTipCsv", "helpTipPrivacy"];
+    var tipsHtml = tipKeys.map(function (k) {
+      return "<li>" + escapeHtml(t(k)) + "</li>";
+    }).join("");
+
+    document.getElementById("helpModalBody").innerHTML =
+      "<p>" + escapeHtml(t("helpIntro")) + "</p>" +
+      "<h3>" + escapeHtml(t("helpStagesTitle")) + "</h3>" +
+      "<ul>" + stagesHtml + "</ul>" +
+      "<h3>" + escapeHtml(t("helpTipsTitle")) + "</h3>" +
+      "<ul>" + tipsHtml + "</ul>";
+  }
+
+  function openHelp() {
+    buildHelpBody();
+    helpModal.hidden = false;
+    helpCloseBtn.focus();
+  }
+
+  function closeHelp() {
+    helpModal.hidden = true;
+  }
+
+  document.getElementById("helpBtn").addEventListener("click", openHelp);
+  helpCloseX.addEventListener("click", closeHelp);
+  helpCloseBtn.addEventListener("click", closeHelp);
+  helpModal.addEventListener("click", function (e) {
+    if (e.target === helpModal) closeHelp();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !helpModal.hidden) closeHelp();
+  });
+
+  // ---- timezone select ----
+  var tzSelect = document.getElementById("tzSelect");
+  var tzOptionsAll = TZ_OPTIONS.indexOf(tz) === -1 ? [tz].concat(TZ_OPTIONS) : TZ_OPTIONS;
+  tzOptionsAll.forEach(function (z) {
+    var opt = document.createElement("option");
+    opt.value = z;
+    opt.textContent = z;
+    if (z === tz) opt.selected = true;
+    tzSelect.appendChild(opt);
+  });
+  tzSelect.addEventListener("change", function () {
+    tz = tzSelect.value;
+    saveTZ();
+    render();
+  });
+
+  // ---- language select ----
+  var langSelect = document.getElementById("langSelect");
+  SUPPORTED_LANGS.forEach(function (l) {
+    var opt = document.createElement("option");
+    opt.value = l;
+    opt.textContent = LANG_NAMES[l];
+    if (l === currentLang) opt.selected = true;
+    langSelect.appendChild(opt);
+  });
+  langSelect.addEventListener("change", function () {
+    currentLang = langSelect.value;
+    saveLang();
+    applyStaticI18n();
+    render();
+  });
+
+  // ---- CSV export/import ----
+  var CSV_HEADERS = ["id", "content", "stage", "created_at", "moved_at", "next_review_at"];
+
+  function csvEscape(v) {
+    var s = v === null || v === undefined ? "" : String(v);
+    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function exportCSV() {
+    var lines = [CSV_HEADERS.join(",")];
+    cards.forEach(function (c) {
+      lines.push([
+        csvEscape(c.id),
+        csvEscape(c.content),
+        csvEscape(c.stage),
+        csvEscape(c.createdAt),
+        csvEscape(c.movedAt),
+        csvEscape(c.nextReviewAt)
+      ].join(","));
+    });
+    var blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = t("csvFilename");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function parseCSV(text) {
+    var rows = [];
+    var row = [];
+    var field = "";
+    var inQuotes = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else {
+          field += c;
+        }
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ",") { row.push(field); field = ""; }
+        else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+        else if (c === "\r") { /* skip */ }
+        else field += c;
+      }
+    }
+    if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+    return rows.filter(function (r) { return !(r.length === 1 && r[0] === ""); });
+  }
+
+  function importCSV(text) {
+    var rows = parseCSV(text);
+    if (rows.length < 1) return;
+    var header = rows[0].map(function (h) { return h.trim().toLowerCase(); });
+    var idx = {};
+    CSV_HEADERS.forEach(function (h) { idx[h] = header.indexOf(h); });
+    if (idx.id === -1 || idx.content === -1) {
+      alert(t("csvInvalid"));
+      return;
+    }
+
+    var imported = 0, updated = 0;
+    for (var r = 1; r < rows.length; r++) {
+      var row = rows[r];
+      if (!row || row.every(function (f) { return f === ""; })) continue;
+      var id = row[idx.id] || uid();
+      var content = sanitizeHTML(row[idx.content] || "");
+      if (isContentEmpty(content)) continue;
+      var stage = idx.stage !== -1 ? row[idx.stage] : "entrada";
+      if (STAGE_KEYS.indexOf(stage) === -1) stage = "entrada";
+      var createdAt = (idx.created_at !== -1 && row[idx.created_at]) || nowISO();
+      var movedAt = (idx.moved_at !== -1 && row[idx.moved_at]) || createdAt;
+      var nextReviewAt = idx.next_review_at !== -1 && row[idx.next_review_at]
+        ? row[idx.next_review_at]
+        : nextReviewFor(stage, movedAt);
+
+      var existing = cards.find(function (c) { return c.id === id; });
+      if (existing) {
+        existing.content = content;
+        existing.stage = stage;
+        existing.createdAt = createdAt;
+        existing.movedAt = movedAt;
+        existing.nextReviewAt = nextReviewAt || null;
+        updated++;
+      } else {
+        cards.push({
+          id: id,
+          content: content,
+          stage: stage,
+          createdAt: createdAt,
+          movedAt: movedAt,
+          nextReviewAt: nextReviewAt || null
+        });
+        imported++;
+      }
+    }
+    saveCards();
+    render();
+    alert(t("csvImportDone", { imported: imported, updated: updated }));
+  }
+
+  document.getElementById("exportBtn").addEventListener("click", exportCSV);
+  document.getElementById("importBtn").addEventListener("click", function () {
+    document.getElementById("importInput").click();
+  });
+  document.getElementById("importInput").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () { importCSV(reader.result); };
+    reader.readAsText(file, "utf-8");
+    e.target.value = "";
+  });
+
+  // ---- static text i18n ----
+  function applyStaticI18n() {
+    document.documentElement.lang = HTML_LANG_MAP[currentLang] || "pt-BR";
+    document.title = t("appTitle");
+    document.getElementById("frameTitle").textContent = t("appTitle");
+    document.getElementById("frameSubtitle").textContent = t("subtitle");
+    document.getElementById("addCardBtn").textContent = t("addCard");
+    document.getElementById("langLabel").textContent = t("languageLabel");
+    document.getElementById("tzLabel").textContent = t("timezoneLabel");
+    document.getElementById("exportBtn").textContent = t("exportCsv");
+    document.getElementById("importBtn").textContent = t("importCsv");
+    document.getElementById("formatToolbar").setAttribute("aria-label", t("formatToolbarLabel"));
+    document.getElementById("fmtBold").title = t("fmtBoldTitle");
+    document.getElementById("fmtItalic").title = t("fmtItalicTitle");
+    document.getElementById("fmtUnderline").title = t("fmtUnderlineTitle");
+    document.getElementById("modalEditor").setAttribute("aria-label", t("editorAriaLabel"));
+    document.getElementById("modalEditor").setAttribute("data-placeholder", t("editorPlaceholder"));
+    document.getElementById("modalCancelBtn").textContent = t("cancel");
+    document.getElementById("modalSaveBtn").textContent = t("save");
+    document.getElementById("footerText").textContent = t("footerText");
+    document.getElementById("visitsLabel").textContent = t("visitsLabel");
+    document.getElementById("helpBtn").textContent = t("helpButton");
+    document.getElementById("helpModalTitle").textContent = t("helpTitle");
+    document.getElementById("helpCloseX").title = t("helpClose");
+    document.getElementById("helpCloseBtn").textContent = t("helpGotIt");
+  }
+
+  // ---- one-time migration: normalize any legacy plain-text cards ----
+  cards.forEach(function (c) { c.content = sanitizeHTML(c.content || ""); });
+  saveCards();
+
+  applyStaticI18n();
+
+  // ---- periodic refresh so "due" state stays current ----
+  setInterval(render, 60000);
+
+  render();
+
+  // ---- visitor counter ----
+  fetch("https://abacus.jasoncameron.dev/hit/revisao-espacada-leobonacini/visits")
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      document.getElementById("visitCount").textContent = data.value;
+    })
+    .catch(function () {
+      document.getElementById("visitCount").textContent = "n/a";
+    });
+})();
+</script>
+
+</body>
+</html>
