@@ -2,8 +2,6 @@
 
 A single-file, static web app for spaced-repetition review, laid out as a pinboard of draggable sticky notes.
 
-No backend, no build step, no dependencies. Everything runs from one HTML file; your data stays in the browser.
-
 ## Features
 
 - **Drag-and-drop board** with six stages: Inbox → 24 hours → 7 days → 28 days → 6 months → Mastered.
@@ -19,13 +17,6 @@ No backend, no build step, no dependencies. Everything runs from one HTML file; 
 ## Getting started
 
 Open `index.html` in any modern browser. That's it, no install and no server required.
-
-If you'd rather serve it locally (e.g. to test on another device on your network), any static file server works:
-
-```bash
-python3 -m http.server 8080
-# then visit http://localhost:8080/index.html
-```
 
 ## How it works
 
@@ -53,17 +44,4 @@ Use the **Export CSV** / **Import CSV** buttons to back up your cards or move th
 
 CSV columns: `id, content, stage, created_at, moved_at, next_review_at` (timestamps in ISO 8601 UTC; `content` may contain `<b>`, `<i>`, `<u>`, and `<br>` tags).
 
-## Visitor counter
 
-The footer shows a simple visit count powered by the free, keyless [abacus.jasoncameron.dev](https://abacus.jasoncameron.dev) hit-counter service. It has no authentication and no SLA, so the counter shows "n/a" if the request fails, the rest of the app is unaffected either way.
-
-## Tech
-
-Plain HTML, CSS, and vanilla JavaScript, no framework, no build tooling, no package.json. Fonts are loaded from Google Fonts.
-
-## Project structure
-
-```
-index.html   # the entire app: markup, styles, and script
-README.md
-```
